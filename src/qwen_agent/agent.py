@@ -6,6 +6,8 @@ from qwen_agent.code_executor import run_code
 
 MODEL = "qwen3.5:9b"
 
+MAX_OUTPUT_CHARS = 4000
+
 SYSTEM_PROMPT = (
     "You solve tasks by writing Python code and calling the run_code tool. "
     "Code executes in a persistent namespace: variables you set in one call "
@@ -14,6 +16,16 @@ SYSTEM_PROMPT = (
     "When you have the final answer, stop calling run_code and reply with "
     "the answer in plain text."
 )
+
+
+def _describe(name: str, text: str) -> str:
+    if len(text) <= MAX_OUTPUT_CHARS:
+        return f"{name}:\n{text}"
+    return (
+        f"{name} was {len(text)} characters, too long to show here - "
+        f"it was loaded into the `{name}` variable in your context instead."
+    )
+
 
 RUN_CODE_TOOL = {
     "type": "function",
@@ -72,11 +84,12 @@ def run_agent(task: str, model: str = MODEL) -> str:
             code = tc.function.arguments.get("code", "")
             stdout, stderr = run_code(code)
             print(f"\n--- run_code ---\n{code}\n--- stdout ---\n{stdout}--- stderr ---\n{stderr}")
+            tool_content = f"{_describe('_stdout', stdout)}\n{_describe('_stderr', stderr)}"
             messages.append(
                 {
                     "role": "tool",
                     "tool_name": tc.function.name,
-                    "content": f"stdout:\n{stdout}\nstderr:\n{stderr}",
+                    "content": tool_content,
                 }
             )
 
