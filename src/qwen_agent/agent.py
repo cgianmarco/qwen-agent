@@ -6,7 +6,7 @@ from qwen_agent.code_executor import run_code
 
 MODEL = "qwen3.5:9b"
 
-MAX_OUTPUT_CHARS = 4000
+MAX_OUTPUT_CHARS = 500
 
 SYSTEM_PROMPT = (
     "You solve tasks by writing Python code and calling the run_code tool. "
